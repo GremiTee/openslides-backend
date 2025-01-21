@@ -1,4 +1,5 @@
 import re
+from copy import deepcopy
 from collections import defaultdict
 from collections.abc import Generator, Iterable
 from typing import Any, cast
@@ -326,10 +327,7 @@ class UserSaveSamlAccount(
             for meeting_id, meeting in sorted(
                 self.datastore.filter(
                     "meeting",
-                    Or(
-                        FilterOperator("external_id", "=", external_meeting_id)
-                        for external_meeting_id in external_meeting_ids
-                    ),
+                    FilterOperator("id", ">", 0),
                     ["id", "default_group_id", "external_id"],
                 ).items()
             )
@@ -350,11 +348,11 @@ class UserSaveSamlAccount(
             meeting_id,
             meeting,
         ) in meetings.items():
-            if not (
-                instance_meeting_user_data := meeting_user_data.get(
-                    meeting["external_id"]
-                )
-            ):
+            instance_meeting_user_data = None
+            for external_id_prefix in meeting_user_data:
+                if meeting["external_id"].startswith(external_id_prefix):
+                    instance_meeting_user_data = deepcopy(meeting_user_data.get(external_id_prefix))
+            if instance_meeting_user_data is None:
                 continue
             if is_update:
                 instance_meeting_user = instance_meeting_user_data.get("for_update")
