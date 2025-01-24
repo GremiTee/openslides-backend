@@ -435,10 +435,7 @@ class UserSaveSamlAccount(
                     value = attr_default.get("default")
                 if value:
                     if saml_meeting_user_field in ["groups", "structure_levels"]:
-                        # Need to append to group and structure_level for same meeting.
-                        if not result:
-                            result = set()
-                        cast(set, result).update(value.split(", "))
+                        result = set(value.split(", "))
                     elif saml_meeting_user_field == "comment":
                         # Want comments from all matching mappers.
                         if result:
